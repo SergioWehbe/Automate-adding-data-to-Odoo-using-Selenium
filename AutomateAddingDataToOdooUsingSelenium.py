@@ -10,12 +10,12 @@ from selenium.webdriver.support.wait import WebDriverWait
 
 # warnings.filterwarnings("ignore")
 
-browser: webdriver.Safari
+browser: webdriver.Chrome
 pageLoadDelay = 10
 
 def initializeBrowser():
     global browser
-    browser = webdriver.Safari()
+    browser = webdriver.Chrome()
 
 def login():
     email = "admin"
@@ -44,16 +44,18 @@ def getSaveButton():
     return WebDriverWait(browser, pageLoadDelay).until(EC.presence_of_element_located((By.CLASS_NAME, "o_form_button_save")))
 
 def addVendor(name: str):
-    openPage(PageType.CREATE_VENDOR)
+    createButton = WebDriverWait(browser, pageLoadDelay).until(EC.presence_of_element_located((By.CLASS_NAME, "o_form_button_create")))
+    createButton.click()
     inputName = WebDriverWait(browser, pageLoadDelay).until(EC.presence_of_element_located((By.CLASS_NAME, "o-autocomplete--input")))
     inputName.send_keys(name)
+    buttonSave = getSaveButton()
+    buttonSave.click()
 
 def addVendorList():
     vendorArray = ["Vendor 1", "Vendor 2", "Vendor 3", "Vendor 4", "Vendor 5", "Vendor Last"]
+    openPage(PageType.CREATE_VENDOR)
     for vendor in vendorArray:
         addVendor(vendor)
-    buttonSave = getSaveButton()
-    buttonSave.click()
 
 @dataclass
 class Product:
@@ -62,12 +64,14 @@ class Product:
     category: str
 
 def addProduct(product: Product):
-    openPage(PageType.CREATE_PRODUCT)
+    createButton = WebDriverWait(browser, pageLoadDelay).until(EC.presence_of_element_located((By.CLASS_NAME, "o_form_button_create")))
+    createButton.click()
     inputName = WebDriverWait(browser, pageLoadDelay).until(EC.presence_of_element_located((By.ID, "name")))
     inputName.send_keys(product.name)
     if product.isAvailableInPOS:
         browser.find_element(By.NAME, "sales").click()
-        browser.find_element(By.ID, "available_in_pos").click()
+        availableInPos = WebDriverWait(browser, pageLoadDelay).until(EC.presence_of_element_located((By.ID, "available_in_pos")))
+        availableInPos.click()
         inputCategory = WebDriverWait(browser, pageLoadDelay).until(EC.presence_of_element_located((By.ID, "pos_categ_id")))
         inputCategory.send_keys(product.category)
         # Wait for Dropdown "Create category" to show
@@ -82,6 +86,7 @@ def addProductList():
                     Product(name="Sechoir Luv 3", isAvailableInPOS=True, category="Categorios"),
                     Product(name="ProdCat 1", isAvailableInPOS=True, category="Catz"),
                     Product(name="ProdCat 2", isAvailableInPOS=True, category="Catz"),]
+    openPage(PageType.CREATE_PRODUCT)
     for product in productArray:
         addProduct(product)
 
@@ -89,7 +94,7 @@ if __name__ == "__main__":
     initializeBrowser()
     login()
     # addVendorList()
-    addProductList()
+    # addProductList()
 
     print("Press return key to close the browser")
     input()
